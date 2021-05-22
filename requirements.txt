@@ -1,2 +1,2 @@
-wizwalker==1.2.9
+wizwalker==1.3.0
 wizsprinter==0.3.5
