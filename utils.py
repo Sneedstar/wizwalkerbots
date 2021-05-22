@@ -93,7 +93,7 @@ async def collect_wisps(client):
 
 async def decide_heal(client):
     if await client.needs_potion(health_percent=5, mana_percent=5):
-        if await client.stats.current_gold() >= 500000: 
+        if await client.stats.current_gold() >= 30000: 
             print(f"[{client.title}] Buying Potions")
             await auto_buy_potions(client)
         else:
