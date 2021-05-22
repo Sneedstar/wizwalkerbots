@@ -51,7 +51,7 @@ async def main(sprinter):
         
         # Healing
         await asyncio.gather(*[p.use_potion_if_needed(health_percent=5, mana_percent=5) for p in clients]) # WizSprinter function now, not WizSDK
-        await asyncio.gather(*[healthAndManaCheck.decide_heal(p) for p in clients])
+        await asyncio.gather(*[potion.decide_heal(p) for p in clients])
         await asyncio.sleep(5)
 
         # Time
