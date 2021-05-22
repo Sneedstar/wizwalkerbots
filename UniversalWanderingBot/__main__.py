@@ -3,7 +3,7 @@ from time import time
 
 from wizwalker.constants import Keycode
 from wizwalker.extensions.wizsprinter import SprintyCombat, CombatConfigProvider, WizSprinter
-from wizwalker-bots.healthAndManaCheck import healthAndManaCheck
+from healthAndManaCheck import healthAndManaCheck
 
 async def main(sprinter):
     potion = healthAndManaCheck()
