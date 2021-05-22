@@ -3,10 +3,10 @@ from time import time
 
 from wizwalker.constants import Keycode
 from wizwalker.extensions.wizsprinter import SprintyCombat, CombatConfigProvider, WizSprinter
-from healthAndManaCheck import healthAndManaCheck
+
+from utils import decide_heal
 
 async def main(sprinter):
-    potion = healthAndManaCheck()
     # Register clients
     sprinter.get_new_clients()
     clients = sprinter.get_ordered_clients()
@@ -40,7 +40,7 @@ async def main(sprinter):
         # Battle:
         print("Initiating combat")
         for p in clients: # Setting up the parsed configs to combat_handlers
-            combat_handlers.append(SprintyCombat(p, CombatConfigProvider(f'configs/{p.title}spellconfig.txt', cast_time=0.5, memory_timeout= 5.0)))
+            combat_handlers.append(SprintyCombat(p, CombatConfigProvider(f'UniversalWanderingBot/configs/{p.title}spellconfig.txt', cast_time=0.6, memory_timeout= 10.0)))
         await asyncio.gather(*[h.wait_for_combat() for h in combat_handlers]) # .wait_for_combat() to wait for combat to then go through the battles
         print("Combat ended")
 
@@ -51,15 +51,15 @@ async def main(sprinter):
         
         # Healing
         await asyncio.gather(*[p.use_potion_if_needed(health_percent=5, mana_percent=5) for p in clients]) # WizSprinter function now, not WizSDK
-        await asyncio.gather(*[potion.decide_heal(p) for p in clients])
+        await asyncio.gather(*[decide_heal(p) for p in clients])
         await asyncio.sleep(5)
 
         # Time
         Total_Count += 1
         print("The Total Amount of Runs: ", Total_Count)
-        print("Time Taken for run: ", round((time() - start) / 60), "minutes")
-        print("Total time elapsed: ", round((time() - total) / 60), "minutes")
-        print("Average time per run: ", round(((time() - total) / 60) / Total_Count), "minutes")
+        print("Time Taken for run: ", round((time() - start) / 60, 2), "minutes")
+        print("Total time elapsed: ", round((time() - total) / 60, 2), "minutes")
+        print("Average time per run: ", round(((time() - total) / 60) / Total_Count, 2), "minutes")
 
 
 # Error Handling
