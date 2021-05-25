@@ -1,9 +1,7 @@
 import asyncio
-from time import time
 
 from wizwalker.constants import Keycode
-from wizwalker.extensions.wizsprinter.SprintyClient import SprintyClient, MemoryReadError
-
+from wizwalker.extensions.wizsprinter.SprintyClient import MemoryReadError
 
 potion_ui_buy = [
     "fillallpotions",
@@ -14,6 +12,19 @@ potion_ui_buy = [
     "buyAction",
     "exit"
 ]
+
+async def logout_and_in(client):
+    await client.send_key(Keycode.ESC, 0.1)
+    await asyncio.sleep(0.25)
+    await client.mouse_handler.click_window_with_name('QuitButton')
+    await asyncio.sleep(0.25)
+    if await client.root_window.get_windows_with_name('centerButton'):
+        await asyncio.sleep(0.4)
+        await client.mouse_handler.click_window_with_name('centerButton')
+    await client.wait_for_zone_change()
+    await asyncio.sleep(3.5)
+    await client.mouse_handler.click_window_with_name('btnPlay')
+    await client.wait_for_zone_change()
 
 async def auto_buy_potions(client):
     # Head to home world gate
@@ -82,20 +93,21 @@ async def collect_wisps(client):
     # Collecting wisps
     while await client.stats.current_hitpoints() < await client.stats.max_hitpoints():
         await safe_tp_to_health(client)
-        await asyncio.sleep(0.3)
+        await asyncio.sleep(0.4)
     while await client.stats.current_mana() < await client.stats.max_mana():
         await safe_tp_to_mana(client)
-        await asyncio.sleep(0.3)
+        await asyncio.sleep(0.4)
     # Return
     await client.send_key(Keycode.PAGE_UP, 0.2)
     await client.wait_for_zone_change()
     await client.send_key(Keycode.PAGE_DOWN, 0.2)
 
 async def decide_heal(client):
-    if await client.needs_potion(health_percent=5, mana_percent=5):
-        if await client.stats.current_gold() >= 30000: 
-            print(f"[{client.title}] Buying Potions")
+    if await client.needs_potion(health_percent=10, mana_percent=5):
+        print(f'[{client.title}] Needs potion, checking gold count')
+        if await client.stats.current_gold() >= 25000: 
+            print(f"[{client.title}] Enough gold, buying potions")
             await auto_buy_potions(client)
         else:
-            print(f"[{client.title}] Collecting Wisps")
+            print(f"[{client.title}] Low gold, collecting wisps")
             await collect_wisps(client)
