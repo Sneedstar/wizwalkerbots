@@ -16,10 +16,10 @@ async def main(sprinter):
 
     # Hook activation
     for p in clients: 
-        print(f"[{p.title}] Activating Hooks")
-        await p.activate_hooks()
-        await p.mouse_handler.activate_mouseless()
-        await p.send_key(Keycode.PAGE_DOWN, 0.1)
+      print(f"[{p.title}] Activating Hooks")
+      await p.activate_hooks()
+      await p.mouse_handler.activate_mouseless()
+      await p.send_key(Keycode.PAGE_DOWN, 0.1)
 
     combat_handlers = []
     Total_Count = 0
@@ -40,7 +40,7 @@ async def main(sprinter):
         # Battle:
         print("Initiating combat")
         for p in clients: # Setting up the parsed configs to combat_handlers
-            combat_handlers.append(SprintyCombat(p, CombatConfigProvider(f'UniversalWanderingBot/configs/{p.title}spellconfig.txt', cast_time=0.6, memory_timeout= 10.0)))
+            combat_handlers.append(SprintyCombat(p, CombatConfigProvider(f'UniversalWanderingBot/configs/{p.title}spellconfig.txt', memory_timeout= 5.0)))
         await asyncio.gather(*[h.wait_for_combat() for h in combat_handlers]) # .wait_for_combat() to wait for combat to then go through the battles
         print("Combat ended")
 
@@ -50,7 +50,7 @@ async def main(sprinter):
         await asyncio.gather(*[p.send_key(Keycode.W, 0.1) for p in clients])
         
         # Healing
-        await asyncio.gather(*[p.use_potion_if_needed(health_percent=5, mana_percent=5) for p in clients]) # WizSprinter function now, not WizSDK
+        await asyncio.gather(*[p.use_potion_if_needed(health_percent=10, mana_percent=5) for p in clients]) # WizSprinter function now, not WizSDK
         await asyncio.gather(*[decide_heal(p) for p in clients])
         await asyncio.sleep(5)
 
