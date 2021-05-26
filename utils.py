@@ -21,8 +21,7 @@ async def logout_and_in(client):
     if await client.root_window.get_windows_with_name('centerButton'):
         await asyncio.sleep(0.4)
         await client.mouse_handler.click_window_with_name('centerButton')
-    await client.wait_for_zone_change()
-    await asyncio.sleep(3.5)
+    await asyncio.sleep(7)
     await client.mouse_handler.click_window_with_name('btnPlay')
     await client.wait_for_zone_change()
 
