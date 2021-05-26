@@ -45,7 +45,7 @@ async def main(sprinter):
         # Battle:
         print("Initiating combat")
         for p in clients: # Setting up the parsed configs to combat_handlers
-            combat_handlers.append(SprintyCombat(p, CombatConfigProvider(f'UniversalWanderingBot/configs/{p.title}spellconfig.txt', cast_time=1, memory_timeout= 5.0)))
+            combat_handlers.append(SprintyCombat(p, CombatConfigProvider(f'UniversalInstanceBot/configs/{p.title}spellconfig.txt', cast_time=1, memory_timeout= 5.0)))
         await asyncio.gather(*[h.wait_for_combat() for h in combat_handlers]) # .wait_for_combat() to wait for combat to then go through the battles
         print("Combat ended")
         
