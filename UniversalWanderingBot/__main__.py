@@ -2,8 +2,7 @@ import asyncio
 from time import time
 
 from wizwalker.constants import Keycode
-from wizwalker.extensions.wizsprinter import SprintyCombat, CombatConfigProvider, WizSprinter
-
+from wizwalker.extensions.wizsprinter import sprinty_combat, combat_config_provider, wiz_sprinter
 from utils import decide_heal
 
 async def main(sprinter):
@@ -40,7 +39,7 @@ async def main(sprinter):
         combat_handlers = []
         print("Initiating combat")
         for p in clients: # Setting up the parsed configs to combat_handlers
-            combat_handlers.append(SprintyCombat(p, CombatConfigProvider(f'UniversalWanderingBot/configs/{p.title}spellconfig.txt', memory_timeout= 5.0)))
+            combat_handlers.append(sprinty_combat(p, combat_config_provider(f'UniversalWanderingBot/configs/{p.title}spellconfig.txt', memory_timeout= 5.0)))
         await asyncio.gather(*[h.wait_for_combat() for h in combat_handlers]) # .wait_for_combat() to wait for combat to then go through the battles
         print("Combat ended")
 
@@ -64,7 +63,7 @@ async def main(sprinter):
 
 # Error Handling
 async def run():
-  sprinter = WizSprinter()
+  sprinter = wiz_sprinter()
 
   try:
     await main(sprinter)

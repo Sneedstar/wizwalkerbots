@@ -1,6 +1,6 @@
 import asyncio
 from wizwalker.constants import Keycode
-from wizwalker.extensions.wizsprinter.SprintyClient import MemoryReadError
+from wizwalker.extensions.wizsprinter.sprinty_client import MemoryReadError
 
 potion_ui_buy = [
     "fillallpotions",

@@ -2,14 +2,9 @@ import asyncio
 from time import time
 
 from wizwalker.constants import Keycode
-from wizwalker.extensions.wizsprinter import SprintyCombat, CombatConfigProvider, WizSprinter
+from wizwalker.extensions.wizsprinter import sprinty_combat, combat_config_provider, wiz_sprinter
 
 from utils import decide_heal, logout_and_in
-
-class UseSuperPass(SprintyCombat):
-  async def pass_button(self):
-    self.way_pass = True
-    await super(SprintyCombat, self).pass_button()
 
 async def main(sprinter):
     # Register clients
@@ -52,7 +47,7 @@ async def main(sprinter):
         combat_handlers = []
         print("Initiating combat")
         for p in clients: # Setting up the parsed configs to combat_handlers
-            combat_handlers.append(UseSuperPass(p, CombatConfigProvider(f'UniversalInstanceBot/configs/{p.title}spellconfig.txt', cast_time= 0.7, memory_timeout= 7.0)))
+            combat_handlers.append(sprinty_combat(p, combat_config_provider(f'UniversalInstanceBot/configs/{p.title}spellconfig.txt', cast_time= 0.7, memory_timeout= 7.0)))
         await asyncio.gather(*[h.wait_for_combat() for h in combat_handlers]) # .wait_for_combat() to wait for combat to then go through the battles
         print("Combat ended")
         await asyncio.sleep(11)
@@ -74,7 +69,7 @@ async def main(sprinter):
 
 # Error Handling
 async def run():
-  sprinter = WizSprinter() # Define thingys
+  sprinter = wiz_sprinter() # Define thingys
 
   try:
     await main(sprinter)
