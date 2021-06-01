@@ -1,5 +1,4 @@
 import asyncio
-
 from wizwalker.constants import Keycode
 from wizwalker.extensions.wizsprinter.SprintyClient import MemoryReadError
 
@@ -15,15 +14,21 @@ potion_ui_buy = [
 
 async def logout_and_in(client):
     await client.send_key(Keycode.ESC, 0.1)
-    await asyncio.sleep(0.25)
+    await asyncio.sleep(0.4)
     await client.mouse_handler.click_window_with_name('QuitButton')
-    await asyncio.sleep(0.25)
+    await asyncio.sleep(0.4)
     if await client.root_window.get_windows_with_name('centerButton'):
         await asyncio.sleep(0.4)
         await client.mouse_handler.click_window_with_name('centerButton')
     await asyncio.sleep(7)
     await client.mouse_handler.click_window_with_name('btnPlay')
     await client.wait_for_zone_change()
+
+async def go_through_dialog(client):
+    while not await client.is_in_dialog():
+        await asyncio.sleep(0.1)
+    while await client.is_in_dialog():
+        await client.send_key(Keycode.SPACEBAR, 0.1)
 
 async def auto_buy_potions(client):
     # Head to home world gate
@@ -101,12 +106,32 @@ async def collect_wisps(client):
     await client.wait_for_zone_change()
     await client.send_key(Keycode.PAGE_DOWN, 0.2)
 
+async def low_collect_wisps(client):
+    # Head to start of world
+    await asyncio.sleep(0.1)
+    await client.send_key(Keycode.END, 0.1)
+    # Recover
+    while await client.stats.current_hitpoints() < await client.stats.max_hitpoints():
+        await safe_tp_to_health(client)
+        await asyncio.sleep(0.4)
+    while await client.stats.current_mana() < await client.stats.max_mana():
+        await safe_tp_to_mana(client)
+        await asyncio.sleep(0.4)
+    # Return
+    await client.send_key(Keycode.PAGE_UP, 0.1)
+    await client.wait_for_zone_change()
+    await client.send_key(Keycode.PAGE_DOWN, 0.2)
+
+
 async def decide_heal(client):
     if await client.needs_potion(health_percent=10, mana_percent=5):
-        print(f'[{client.title}] Needs potion, checking gold count')
-        if await client.stats.current_gold() >= 25000: 
+        print(f'[{client.title}] Health is at {round((await client.calc_health_ratio()* 100), 2)}% and mana is at {round((await client.calc_mana_ratio() * 100), 2)}%. Need to recover.')
+        if await client.stats.current_gold() >= 25000 and await client.stats.reference_level() > 5: 
             print(f"[{client.title}] Enough gold, buying potions")
             await auto_buy_potions(client)
-        else:
+        elif await client.stats.reference_level() >= 110:
             print(f"[{client.title}] Low gold, collecting wisps")
             await collect_wisps(client)
+        else:
+            print(f"[{client.title}] Collecting wisps")
+            await low_collect_wisps(client)

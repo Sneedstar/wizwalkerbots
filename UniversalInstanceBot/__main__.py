@@ -6,6 +6,11 @@ from wizwalker.extensions.wizsprinter import SprintyCombat, CombatConfigProvider
 
 from utils import decide_heal, logout_and_in
 
+class UseSuperPass(SprintyCombat):
+  async def pass_button(self):
+    self.way_pass = True
+    await super(SprintyCombat, self).pass_button()
+
 async def main(sprinter):
     # Register clients
     sprinter.get_new_clients()
@@ -47,17 +52,12 @@ async def main(sprinter):
         combat_handlers = []
         print("Initiating combat")
         for p in clients: # Setting up the parsed configs to combat_handlers
-            combat_handlers.append(SprintyCombat(p, CombatConfigProvider(f'UniversalInstanceBot/configs/{p.title}spellconfig.txt', memory_timeout= 5.0)))
+            combat_handlers.append(UseSuperPass(p, CombatConfigProvider(f'UniversalInstanceBot/configs/{p.title}spellconfig.txt', cast_time= 0.7, memory_timeout= 7.0)))
         await asyncio.gather(*[h.wait_for_combat() for h in combat_handlers]) # .wait_for_combat() to wait for combat to then go through the battles
         print("Combat ended")
-
+        await asyncio.sleep(11)
         for p in clients:
-          if await p.stats.current_hitpoints() <= 1:
-            await asyncio.gather(*[p.send_key(Keycode.PAGE_UP, 0.1) for p in clients])
-            await asyncio.gather(*[p.use_potion_if_needed(health_percent=10, mana_percent=5) for p in clients])
-            continue
-        
-        await asyncio.gather(*[logout_and_in(p) for p in clients])
+          await logout_and_in(p)
 
         # Healing
         await asyncio.gather(*[p.use_potion_if_needed(health_percent=10, mana_percent=5) for p in clients])

@@ -21,7 +21,6 @@ async def main(sprinter):
       await p.mouse_handler.activate_mouseless()
       await p.send_key(Keycode.PAGE_DOWN, 0.1)
 
-    combat_handlers = []
     Total_Count = 0
     total = time()
     while True:
@@ -38,6 +37,7 @@ async def main(sprinter):
             await asyncio.sleep(0.2)
 
         # Battle:
+        combat_handlers = []
         print("Initiating combat")
         for p in clients: # Setting up the parsed configs to combat_handlers
             combat_handlers.append(SprintyCombat(p, CombatConfigProvider(f'UniversalWanderingBot/configs/{p.title}spellconfig.txt', memory_timeout= 5.0)))
