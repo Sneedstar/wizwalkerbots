@@ -1,5 +1,11 @@
 # wizwalker-bots
-Simple repo to house my WizWalker bots
+Simple repo to house my WizWalker bots. Everything you need to know is in the README. Please do not try to dm me.
+
+## Running from releases
+1. Download from [here](https://github.com/MajorPain1/wizwalkerbots/release) <br />
+2. Extract the zip <br />
+3. Set your configs using the guide below <br />
+4. Double click the exe in the desired location you want to run the script <br />
 
 ## Running from source
 Run `pip install -r requirements.txt` to install required libraries <br />
