@@ -14,9 +14,7 @@ To run from source do `py -m {name of bot}` in the main github folder <br />
 Most people should run from releases. Just extract the zip, set your configs, and run the exe.
 
 ## Spell Config guide
-The spell config in WizSprinter was updated so here's a guide
-
-Firstly, this is the new setup,```{#} spell[enchant] @ target | spell[enchant] @ target | etc.``` 
+Firstly, this is the setup,```{#} spell[enchant] @ target | spell[enchant] @ target | etc.``` 
 
 Quick note: configs will loop indefinitely which means you can have one lined configs like: ```lord[epic] | tempest[epic]``` to constantly loop storm lord and tempest indefinitely
 
