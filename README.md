@@ -1,5 +1,6 @@
 # wizwalker-bots
-Simple repo to house my WizWalker bots. Everything you need to know is in the README. Please do not try to dm me.
+Simple repo to house my WizWalker bots. Everything you need to know is in the README. Please do not try to dm me. <br />
+Don't make messages in #support about my bots until you read the entire README. It's called README for a reason. If you cannot read, I'm sure I can find someone to read it to you.
 
 ## Running from releases
 1. Download from [here](https://github.com/MajorPain1/wizwalkerbots/releases) <br />
@@ -38,3 +39,11 @@ lord[epic] | tempest[epic]```
 
 Now, `any<...>`. The any template can be used to say that you want to cast any of a type of spell effect. i.e. `any<damage> @ enemy` or `any<damage & aoe>[any<enchant>]`.
 All the different kinds of specifiers you can use are `damage, aoe, heal, heal self, heal other, blade, shield, trap, enchant`
+
+### Example configs
+An example config that will just spam cast any aoe no matter the school: <br />
+`any<damage & aoe>[any<enchant>] | any<damage & aoe>` <br />
+Or, if you want to feint the boss and blade, and then spam aoe: <br />
+`{1} feint[potent] @ boss | any<blade> @ self` <br />
+`{2} feint[potent] @ boss | any<blade> @ self` <br />
+`any<damage & aoe>[any<enchant>] | any<damage & aoe>`
