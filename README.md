@@ -2,6 +2,8 @@
 Simple repo to house my WizWalker bots. Everything you need to know is in the README. Please do not try to dm me. <br />
 Don't make messages in #support about my bots until you read the entire README. It's called README for a reason. If you cannot read, I'm sure I can find someone to read it to you.
 
+Note: you need a house with a world gate behind you equipped
+
 ## Running from releases
 1. Download from [here](https://github.com/MajorPain1/wizwalkerbots/releases) <br />
 2. Extract the zip <br />
