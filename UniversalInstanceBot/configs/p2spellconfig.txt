@@ -1,1 +1,2 @@
-feint[potent] @ lore | orthrus[epic] | basilisk | frog[epic]
+frenzy | nova[epic] | chimera
+

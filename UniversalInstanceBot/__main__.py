@@ -2,7 +2,7 @@ import asyncio
 from time import time
 
 from wizwalker.constants import Keycode
-from wizwalker.extensions.wizsprinter import sprinty_combat, combat_config_provider, wiz_sprinter
+from wizwalker.extensions.wizsprinter import SprintyCombat, CombatConfigProvider, WizSprinter
 
 from utils import decide_heal, logout_and_in
 
@@ -20,6 +20,7 @@ async def main(sprinter):
         await p.activate_hooks()
         await p.mouse_handler.activate_mouseless()
         await p.send_key(Keycode.PAGE_DOWN, 0.1)
+        await p.use_potion_if_needed(health_percent=20, mana_percent=5)
 
     Total_Count = 0
     total = time()
@@ -29,34 +30,50 @@ async def main(sprinter):
         await asyncio.gather(*[decide_heal(p) for p in clients]) 
 
         # Entering Dungeon
-        await asyncio.gather(*[p.send_key(Keycode.X, 0.1) for p in clients])
-        await asyncio.sleep(11)
+        print("Entering sigil")
+        for p in clients:
+          while await p.is_in_npc_range():
+            await asyncio.sleep(0.4)
+            await p.send_key(Keycode.X, 0.1)
         await asyncio.gather(*[p.wait_for_zone_change() for p in clients])
+        await asyncio.sleep(1.4)
 
         # Initial battle starter
+        print("[p1] Teleporting to mob")
         await p1.tp_to_closest_mob()
+        await asyncio.sleep(0.3)
         await p1.send_key(Keycode.W, 0.1)
+        await p1.send_key(Keycode.D, 0.1)
         await asyncio.sleep(0.4)
         for p in clients[1:]:
+            print(f"[{p.title}] Teleporting to p1")
             p1pos = await p1.body.position()
             await p.teleport(p1pos)
+            await asyncio.sleep(0.3)
             await p.send_key(Keycode.W, 0.1)
+            await p.send_key(Keycode.D, 0.1)
             await asyncio.sleep(0.2)
 
         # Battle:
+        print("Preparing combat configs")
         combat_handlers = []
-        print("Initiating combat")
         for p in clients: # Setting up the parsed configs to combat_handlers
-            combat_handlers.append(sprinty_combat(p, combat_config_provider(f'UniversalInstanceBot/configs/{p.title}spellconfig.txt', cast_time= 0.7, memory_timeout= 7.0)))
-        await asyncio.gather(*[h.wait_for_combat() for h in combat_handlers]) # .wait_for_combat() to wait for combat to then go through the battles
+            combat_handlers.append(SprintyCombat(p, CombatConfigProvider(f'UniversalInstanceBot/configs/{p.title}spellconfig.txt', cast_time= 1)))
+        print("Starting combat")
+        await asyncio.gather(*[h.wait_for_combat() for h in combat_handlers]) # Battle
         print("Combat ended")
-        await asyncio.sleep(11)
+        await asyncio.sleep(7)
         for p in clients:
+          await p.send_key(Keycode.W, 0.1)
           await logout_and_in(p)
+          await asyncio.sleep(2)
 
         # Healing
-        await asyncio.gather(*[p.use_potion_if_needed(health_percent=10, mana_percent=5) for p in clients])
-        await asyncio.sleep(3.5)
+        for p in clients:
+          if await p.needs_potion(health_percent=20, mana_percent=5):
+            print(f"[{p.title}] Needs potion, attempting to use")
+            await p.use_potion_if_needed(health_percent=20, mana_percent=5)
+          await asyncio.sleep(0.2)
 
         # Time
         Total_Count += 1
@@ -69,7 +86,7 @@ async def main(sprinter):
 
 # Error Handling
 async def run():
-  sprinter = wiz_sprinter() # Define thingys
+  sprinter = WizSprinter()
 
   try:
     await main(sprinter)
