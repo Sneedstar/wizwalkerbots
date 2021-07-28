@@ -13,18 +13,26 @@ potion_ui_buy = [
 ]
 
 async def logout_and_in(client):
+    print(f'[{client.title}] Logging out and in')
+    await asyncio.sleep(0.6)
     await client.send_key(Keycode.ESC, 0.1)
     await asyncio.sleep(0.4)
-    await client.mouse_handler.click_window_with_name('QuitButton')
+    try:
+        await client.mouse_handler.click_window_with_name('QuitButton')
+    except ValueError:
+        await client.send_key(Keycode.ESC, 0.1)
+        await asyncio.sleep(0.4)
+        await client.mouse_handler.click_window_with_name('QuitButton')
     await asyncio.sleep(0.4)
     if await client.root_window.get_windows_with_name('centerButton'):
-        await asyncio.sleep(0.4)
+        await asyncio.sleep(0.15)
         await client.mouse_handler.click_window_with_name('centerButton')
-    await asyncio.sleep(7)
+    await asyncio.sleep(8)
     await client.mouse_handler.click_window_with_name('btnPlay')
     await client.wait_for_zone_change()
 
 async def go_through_dialog(client):
+    print(f'[{client.title}] Going through dialogue')
     while not await client.is_in_dialog():
         await asyncio.sleep(0.1)
     while await client.is_in_dialog():
@@ -38,7 +46,7 @@ async def auto_buy_potions(client):
     while not await client.is_in_npc_range():
         await client.send_key(Keycode.S, 0.1)
     await client.send_key(Keycode.X, 0.1)
-    await asyncio.sleep(1.2)
+    await asyncio.sleep(1.4)
     # Go to Wizard City
     await client.mouse_handler.click_window_with_name('wbtnWizardCity')
     await asyncio.sleep(0.15)
@@ -95,10 +103,10 @@ async def collect_wisps(client):
     await client.mouse_handler.click_window_with_name('teleportButton')
     await client.wait_for_zone_change()
     # Collecting wisps
-    while await client.stats.current_hitpoints() < await client.stats.max_hitpoints():
+    while (await client.stats.current_hitpoints() < await client.stats.max_hitpoints()) and await client.get_health_wisps():
         await safe_tp_to_health(client)
         await asyncio.sleep(0.4)
-    while await client.stats.current_mana() < await client.stats.max_mana():
+    while (await client.stats.current_mana() < await client.stats.max_mana()) and await client.get_mana_wisps():
         await safe_tp_to_mana(client)
         await asyncio.sleep(0.4)
     # Return
@@ -124,7 +132,7 @@ async def low_collect_wisps(client):
 
 
 async def decide_heal(client):
-    if await client.needs_potion(health_percent=10, mana_percent=5):
+    if await client.needs_potion(health_percent=20, mana_percent=5):
         print(f'[{client.title}] Health is at {round((await client.calc_health_ratio()* 100), 2)}% and mana is at {round((await client.calc_mana_ratio() * 100), 2)}%. Need to recover.')
         if await client.stats.current_gold() >= 25000 and await client.stats.reference_level() > 5: 
             print(f"[{client.title}] Enough gold, buying potions")
