@@ -1,4 +1,5 @@
 import asyncio
+import pathlib
 from time import time
 
 from wizwalker.constants import Keycode
@@ -58,7 +59,8 @@ async def main(sprinter):
         print("Preparing combat configs")
         combat_handlers = []
         for p in clients: # Setting up the parsed configs to combat_handlers
-            combat_handlers.append(SprintyCombat(p, CombatConfigProvider(f'UniversalInstanceBot/configs/{p.title}spellconfig.txt', cast_time= 1)))
+            file_path = pathlib.Path(__file__).parent / "configs" / f"{p.title}spellconfig.txt"
+            combat_handlers.append(SprintyCombat(p, CombatConfigProvider(str(file_path.absolute()), cast_time=1)))
         print("Starting combat")
         await asyncio.gather(*[h.wait_for_combat() for h in combat_handlers]) # Battle
         print("Combat ended")
@@ -83,19 +85,18 @@ async def main(sprinter):
         print("Average time per run: ", round(((time() - total) / 60) / Total_Count, 2), "minutes")
 
 
-
 # Error Handling
 async def run():
-  sprinter = WizSprinter()
+    sprinter = WizSprinter()
 
-  try:
-    await main(sprinter)
-  except:
-    import traceback
+    try:
+        await main(sprinter)
+    except:
+        import traceback
 
-    traceback.print_exc()
+        traceback.print_exc()
 
-  await sprinter.close()
+    await sprinter.close()
 
 
 # Start
