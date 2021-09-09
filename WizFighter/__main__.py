@@ -193,6 +193,12 @@ class HighLevelCombat(CombatHandler):
       final_cast = auras[0]
       target = None
 
+    # Globals
+    if (globals := await get_spells_by_type_name(self, "global")) and (final_cast == "empty"):
+      await asyncio.sleep(0.5)
+      final_cast = globals[0]
+      target = None
+
     # AOEs
     if (aoes := await get_spells_by_type_name(self, "aoe")) and (final_cast == "empty"):
       await asyncio.sleep(0.3)
