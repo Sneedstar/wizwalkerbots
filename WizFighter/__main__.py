@@ -44,10 +44,6 @@ async def get_school_template_name(self, member: CombatMember):
     school_id = await part.primary_magic_school_id()
     return await self.client.cache_handler.get_template_name(school_id)
 
-async def calc_damage(spell):
-  2
-
-
 class LowLevelCombat(CombatHandler):
   async def handle_round(self):
     await self.client.mouse_handler.activate_mouseless()
