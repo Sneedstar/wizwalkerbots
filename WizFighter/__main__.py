@@ -44,6 +44,10 @@ async def get_school_template_name(self, member: CombatMember):
     school_id = await part.primary_magic_school_id()
     return await self.client.cache_handler.get_template_name(school_id)
 
+async def calc_damage(spell):
+  2
+
+
 class LowLevelCombat(CombatHandler):
   async def handle_round(self):
     await self.client.mouse_handler.activate_mouseless()
@@ -183,6 +187,12 @@ class HighLevelCombat(CombatHandler):
       final_cast = to_cast
       target = boss
 
+    # Auras
+    if (auras := await get_spells_by_type_name(self, "aura")) and (final_cast == "empty"):
+      await asyncio.sleep(0.5)
+      final_cast = auras[0]
+      target = None
+
     # AOEs
     if (aoes := await get_spells_by_type_name(self, "aoe")) and (final_cast == "empty"):
       await asyncio.sleep(0.3)
@@ -228,7 +238,7 @@ class HighLevelCombat(CombatHandler):
       if target != None:
         print(f"Casting {await final_cast.display_name()} at {await target.name()}")
       else:
-        print(f"Casting {await final_cast.display_name()} to all")
+        print(f"Casting {await final_cast.display_name()}")
       await final_cast.cast(target)
     else:
       print("No available spells, passing")
