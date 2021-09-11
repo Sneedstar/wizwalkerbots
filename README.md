@@ -14,3 +14,7 @@ Run `pip install -r requirements.txt` to install required libraries <br />
 To run from source do `py -m {name of bot}` in the main github folder <br />
 
 Most people should run from releases. Just extract the zip, set your configs, and run the exe.
+
+# WizFighter
+WizFighter looks through your hand and decides what card to use. It's priority goes as follows (keep in mind it will prefer to cast enchanted spells): <br />
+Heals (if low on health), Prisms (if boss and if boss is your school), charms, wards (if boss), auras, globals, AOEs, damage spells, passing
