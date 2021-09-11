@@ -4,7 +4,6 @@ from typing import List, Optional
 import wizwalker
 from wizwalker.combat import CombatHandler, CombatMember, CombatCard
 from wizwalker import ClientHandler
-from wizwalker.memory import combat_participant
 
 async def get_spells_by_type_name(client, type_name: str) -> list[wizwalker.combat.CombatCard]:
   async def _pred(card):
@@ -46,6 +45,7 @@ async def get_school_template_name(self, member: CombatMember):
 
 class LowLevelCombat(CombatHandler):
   async def handle_round(self):
+    await asyncio.sleep(0.5)
     await self.client.mouse_handler.activate_mouseless()
 
     mobs = await self.get_all_monster_members()
@@ -88,6 +88,7 @@ class LowLevelCombat(CombatHandler):
 
 class HighLevelCombat(CombatHandler):
   async def handle_round(self):
+    await asyncio.sleep(0.5)
     await self.client.mouse_handler.activate_mouseless()
     client_member = await self.get_client_member()
     final_cast = "empty"
@@ -126,7 +127,7 @@ class HighLevelCombat(CombatHandler):
       else:
         to_cast = heals[0]
       # Enchanting
-      if heal_enchants := (await get_card_vaguely_named(self, "primordial") or await get_card_vaguely_named(self, "radical")):
+      if (heal_enchants := (await get_card_vaguely_named(self, "primordial") or await get_card_vaguely_named(self, "radical"))) and (not enchanted_heals) and (not await to_cast.is_item_card()):
         print(f"Enchanting {await to_cast.display_name()} with {await heal_enchants[0].display_name()}")
         await heal_enchants[0].cast(to_cast)
         await asyncio.sleep(0.2)
@@ -153,7 +154,7 @@ class HighLevelCombat(CombatHandler):
       else:
         to_cast = charms[0]
       # Enchanting
-      if (sharps := await get_card_vaguely_named(self, "sharpened")) and (not enchanted_charms):
+      if (sharps := await get_card_vaguely_named(self, "sharpened")) and (not enchanted_charms) and (not await to_cast.is_item_card()):
         print(f"Enchanting {await to_cast.display_name()} with {await sharps[0].display_name()}")
         await sharps[0].cast(to_cast)
         await asyncio.sleep(0.2)
@@ -173,7 +174,7 @@ class HighLevelCombat(CombatHandler):
       else:
         to_cast = wards[0]
       # Enchanting
-      if (potents := await get_card_vaguely_named(self, "potent")) and (not enchanted_wards):
+      if (potents := await get_card_vaguely_named(self, "potent")) and (not enchanted_wards) and (not await to_cast.is_item_card()):
         print(f"Enchanting {await to_cast.display_name()} with {await potents[0].display_name()}")
         await potents[0].cast(to_cast)
         await asyncio.sleep(0.2)
@@ -205,7 +206,7 @@ class HighLevelCombat(CombatHandler):
       else:
         to_cast = await highest_pip_spell(aoes)
       # Enchanting
-      if enchants := await self.get_damage_enchants():
+      if (enchants := await self.get_damage_enchants()) and (not enchanted_aoes) and (not await to_cast.is_item_card()):
         print(f"Enchanting {await to_cast.display_name()} with {await enchants[0].display_name()}")
         await enchants[0].cast(to_cast)
         await asyncio.sleep(0.2)
@@ -225,7 +226,7 @@ class HighLevelCombat(CombatHandler):
       else:
         to_cast = await highest_pip_spell(damages)
       # Enchanting
-      if damage_enchants := await self.get_damage_enchants():
+      if (damage_enchants := await self.get_damage_enchants()) and (not enchanted_damages) and (not await to_cast.is_item_card()):
         print(f"Enchanting {await to_cast.display_name()} with {await damage_enchants[0].display_name()}")
         await damage_enchants[0].cast(to_cast)
         await asyncio.sleep(0.2)
