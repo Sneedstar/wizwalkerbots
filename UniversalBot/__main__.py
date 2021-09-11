@@ -3,9 +3,8 @@ from time import time
 
 from wizwalker.constants import Keycode
 from wizwalker.extensions.wizsprinter import WizSprinter
-from wizwalker.extensions.scripting.utils import teleport_to_friend_from_list
 
-from utils import decide_heal, logout_and_in, go_through_dialog
+from utils import decide_heal, go_through_dialog
 from WizFighter import *
 
 async def setup(client):
