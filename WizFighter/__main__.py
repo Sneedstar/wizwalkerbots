@@ -221,14 +221,14 @@ class HighLevelCombat(CombatHandler):
       if target_effect is EffectTarget.target_global or EffectTarget.self or EffectTarget.enemy_team or EffectTarget.friendly_team:
         target = None
     for target_effect in target_effects:
+      if target_effect is EffectTarget.enemy_single:
+        target = to_kill
+    for target_effect in target_effects:
       if (target_effect is EffectTarget.enemy_single) and ((await final_cast.type_name() == "Ward") or ("prism" in await final_cast.display_name())) and (is_boss):
         target = boss
     for target_effect in target_effects:
       if target_effect is EffectTarget.friendly_single:
         target = client_member
-    for target_effect in target_effects:
-      if target_effect is EffectTarget.enemy_single:
-        target = to_kill
 
     # Casting
     if final_cast:
