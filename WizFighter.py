@@ -228,5 +228,4 @@ class HighLevelCombat(CombatHandler):
     else:
       print("No available spells, passing")
       await self.pass_button()
-    await self.client.mouse_handler.deactivate_mouseless()
     return
