@@ -218,7 +218,7 @@ class HighLevelCombat(CombatHandler):
       target_effects.append(await effect.effect_target())
 
     for target_effect in target_effects:
-      if target_effect is EffectTarget.target_global or EffectTarget.self or EffectTarget.enemy_team or EffectTarget.friendly_team:
+      if target_effect is EffectTarget.target_global or EffectTarget.self or EffectTarget.enemy_team or EffectTarget.friendly_team or EffectTarget.enemy_team_all_at_once or EffectTarget.friendly_team_all_at_once:
         target = None
     for target_effect in target_effects:
       if target_effect is EffectTarget.enemy_single:
