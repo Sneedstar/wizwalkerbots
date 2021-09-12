@@ -10,6 +10,7 @@ NOTE: EXEs ARE CURRENTLY NOT WORKING AS PYINSTALLER ISN'T UPDATED TO PYTHON 3.10
 2. Double click the exe in the desired location you want to run the script <br />
 
 ## Running from source
+Install python 3.10 [here](https://www.python.org/downloads/release/python-3100rc1/) <br />
 Run `pip install -r requirements.txt` to install required libraries <br />
 To run from source do `py -m {name of bot}` in the main github folder <br />
 
