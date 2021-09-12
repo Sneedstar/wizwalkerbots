@@ -5,15 +5,15 @@ Don't make messages in #bot-support about my bots until you read the entire READ
 Note: you need a house with a world gate behind you equipped
 
 ## Running from releases
+NOTE: EXEs ARE CURRENTLY NOT WORKING AS PYINSTALLER ISN'T UPDATED TO PYTHON 3.10
 1. Download from [here](https://github.com/MajorPain1/wizwalkerbots/releases) <br />
-2. Extract the zip <br />
-3. Double click the exe in the desired location you want to run the script <br />
+2. Double click the exe in the desired location you want to run the script <br />
 
 ## Running from source
 Run `pip install -r requirements.txt` to install required libraries <br />
 To run from source do `py -m {name of bot}` in the main github folder <br />
 
-Most people should run from releases. Just extract the zip, set your configs, and run the exe.
+Most people should run from releases unless specified otherwise.
 
 # WizFighter
 WizFighter looks through your hand and decides what card to use. It's priority goes as follows (keep in mind it will prefer to cast enchanted spells): <br />
