@@ -1,5 +1,4 @@
 import asyncio
-from typing import List
 
 from wizwalker.combat import CombatHandler, CombatMember
 from wizwalker.memory.memory_objects.enums import SpellEffects, EffectTarget
