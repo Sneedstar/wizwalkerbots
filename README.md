@@ -5,7 +5,6 @@ Don't make messages in #bot-support about my bots until you read the entire READ
 Note: you need a house with a world gate behind you equipped
 
 ## Running from releases
-NOTE: EXEs ARE CURRENTLY NOT WORKING AS PYINSTALLER ISN'T UPDATED TO PYTHON 3.10
 1. Download from [here](https://github.com/MajorPain1/wizwalkerbots/releases) <br />
 2. Double click the exe in the desired location you want to run the script <br />
 
