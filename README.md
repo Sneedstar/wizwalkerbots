@@ -9,9 +9,9 @@ Note: you need a house with a world gate behind you equipped
 2. Double click the exe in the desired location you want to run the script <br />
 
 ## Running from source
-Install python 3.10 [here](https://www.python.org/downloads/release/python-3100rc1/) <br />
-Run `pip install -r requirements.txt` to install required libraries <br />
-To run from source do `py -m {name of bot}` in the main github folder <br />
+1. Install python 3.10 [here](https://www.python.org/downloads/release/python-3100rc1/) <br />
+2. Run `pip install -r requirements.txt` to install required libraries <br />
+3. Run `py -m {name of bot}` in the main github folder (probably called wizwalkerbots-main) <br />
 
 Most people should run from releases unless specified otherwise.
 
