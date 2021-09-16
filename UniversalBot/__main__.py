@@ -5,13 +5,13 @@ from wizwalker.constants import Keycode
 from wizwalker.extensions.wizsprinter import WizSprinter
 
 from utils import decide_heal, go_through_dialog
-from WizFighter import *
+from wiz_fighter import WizFighter
 
 async def setup(client):
     print(f"[{client.title}] Activating Hooks")
     await client.activate_hooks()
     await client.mouse_handler.activate_mouseless()
-    await client.send_key(Keycode.PAGE_DOWN, 0.1)
+    #await client.send_key(Keycode.PAGE_DOWN, 0.1) MAKE SURE TO PUT BACK WHEN DONE TESTING AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
     await client.use_potion_if_needed(health_percent=20, mana_percent=5)
 
 async def tp_to_p1(client, p1):
@@ -80,7 +80,7 @@ async def main(sprinter):
         # Battle
         battles = []
         for client in clients:
-            battles.append(HighLevelCombat(client))
+            battles.append(WizFighter(client))
         await asyncio.gather(*[battle.wait_for_combat() for battle in battles])
         print("Combat Ended")
 
