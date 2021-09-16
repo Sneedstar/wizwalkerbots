@@ -17,8 +17,14 @@ Most people should run from releases unless specified otherwise.
 
 # WizFighter
 WizFighter looks through your hand and decides what card to use. It's priority goes as follows (keep in mind it will prefer to cast enchanted spells): <br />
-Heals (if low on health), Prisms (if boss and if boss is your school), charms, wards (if boss), auras, globals, AOEs, damage spells, passing <br />
-
-Cards that it will not like: negative charms and shields (mantles, weakness, plague, tower shield, etc) <br />
-Cards it will ignore: minions and minion sacrifice <br />
-Cards it likes: AOEs, damage spells, positive charms and traps, heals, prisms, auras, globals, and all enchants. <br />
+1. Heals (if low on health)
+2. Prisms (if boss and if boss is your school)
+3. Damage Positive Charms
+4. Positive Wards
+5. Damage Auras & Globals
+6. Other Positive Charms
+7. Damage Spells
+8. Negative Charms
+9. Negative Wards (shields)
+10. Other Auras & Globals
+11. Passing <br />
