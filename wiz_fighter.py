@@ -3,6 +3,8 @@ import asyncio
 from wizwalker.combat import CombatHandler, CombatMember
 from wizwalker.memory.memory_objects.enums import SpellEffects, EffectTarget
 
+# TODO: Damage Calculations
+# TODO: Team Logic
 
 DAMAGE_EFFECTS = [
   SpellEffects.damage,
@@ -153,7 +155,6 @@ class WizFighter(CombatHandler):
 
       else:
         return await effect.effect_param()
-
 
   async def highest_health_mob(self, mobs):
     to_kill_health = 0
