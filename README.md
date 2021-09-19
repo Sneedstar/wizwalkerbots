@@ -12,7 +12,8 @@ DO NOT RUN FROM RELEASES BECAUSE PYINSTALLER IS NOT UPDATED TO 3.10
 ## Running from source
 1. Install python 3.10 [here](https://www.python.org/downloads/release/python-3100rc1/) <br />
 2. Run `pip install -r requirements.txt` to install required libraries <br />
-3. Run `py -m {name of bot}` in the main github folder (probably called wizwalkerbots-main) <br />
+3. Open cmd in the main github folder. Probably called wizwalkerbots-main. You can achieve this by typing `cmd` in the top address bar in the file explorer <br />
+4. Run `py -m {folder of the bot}`. Example: `py -m UniversalBot` <br />
 
 Most people should run from releases unless specified otherwise.
 
