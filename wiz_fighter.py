@@ -1,5 +1,6 @@
 import asyncio
 
+from wizwalker.memory.memory_objects import game_stats
 from wizwalker.combat import CombatHandler, CombatMember
 from wizwalker.memory.memory_objects.enums import SpellEffects, EffectTarget
 
@@ -23,6 +24,10 @@ DAMAGE_ENCHANT_EFFECTS = [
   SpellEffects.modify_card_damage,
   SpellEffects.modify_card_accuracy,
   SpellEffects.modify_card_armor_piercing, 
+  SpellEffects.modify_card_damage_by_rank
+]
+STRICT_DAMAGE_ENCHANT_EFFECTS = [
+  SpellEffects.modify_card_damage,
   SpellEffects.modify_card_damage_by_rank
 ]
 HEALING_EFFECTS = [
@@ -79,7 +84,10 @@ NONE_TARGETS = [
   EffectTarget.friendly_team, 
   EffectTarget.friendly_team_all_at_once
 ]
-
+DAMAGE_AOE_TARGETS = [
+  EffectTarget.enemy_team,
+  EffectTarget.enemy_team_all_at_once
+]
 
 class WizFighter(CombatHandler):
   async def get_school_template_name(self, member: CombatMember):
@@ -166,7 +174,7 @@ class WizFighter(CombatHandler):
       
     return to_kill 
 
-  async def highest_damage_card(self, cards):
+  async def highest_damage_card(self, cards: list):
     highest_damage = 0
     damagest_card = "empty"
 
@@ -178,9 +186,27 @@ class WizFighter(CombatHandler):
       if (any(effects in card_effects for effects in DAMAGE_EFFECTS)) and (any(effects in card_targets for effects in DAMAGE_TARGETS)):
         if await self.average_effect_param(card) > highest_damage:
           highest_damage = await self.average_effect_param(card)
+            
           damagest_card = card
 
     return damagest_card
+
+  async def highest_damage_aoe(self, cards: list):
+    highest_damage = 0
+    damagest_aoe = "empty"
+
+    for card in cards:
+
+      card_effects = await self.read_spell_effect(card)
+      card_targets = await self.read_target_effect(card)
+
+      if (any(effects in card_effects for effects in DAMAGE_EFFECTS)) and (any(effects in card_targets for effects in DAMAGE_AOE_TARGETS)):
+        if await self.average_effect_param(card) > highest_damage:
+          highest_damage = await self.average_effect_param(card)
+            
+          damagest_aoe = card
+
+    return damagest_aoe
 
   async def get_enchanted_spells_by_spell_effect(self, effects: list):
     async def _pred(card):
@@ -230,6 +256,7 @@ class WizFighter(CombatHandler):
     # Sorting enchants
     heal_enchants = []   
     damage_enchants = []
+    strict_damage_enchants = []
     trap_enchants = [] 
     charm_enchants = []
     for enchant in enchants:
@@ -239,6 +266,8 @@ class WizFighter(CombatHandler):
         heal_enchants.append(enchant)
       if any(effects in enchant_types for effects in DAMAGE_ENCHANT_EFFECTS):
         damage_enchants.append(enchant)
+      if any(effects in enchant_types for effects in STRICT_DAMAGE_ENCHANT_EFFECTS):
+        strict_damage_enchants.append(enchant)
       if any(effects in enchant_types for effects in TRAP_ENCHANT_EFFECTS):
         trap_enchants.append(enchant)
       if any(effects in enchant_types for effects in CHARM_ENCHANT_EFFECTS):
@@ -246,6 +275,7 @@ class WizFighter(CombatHandler):
 
     # Finding Highest Damage card
     damagest_card = await self.highest_damage_card(normals)
+    damagest_aoe = await self.highest_damage_aoe(normals)
 
     ## Find card to cast
     final_cast = None
@@ -293,28 +323,34 @@ class WizFighter(CombatHandler):
         card_value = 6
         final_cast = card
 
-      # Damage spells
-      if (any(effects in effect_types for effects in DAMAGE_EFFECTS)) and (any(effects in effect_targets for effects in DAMAGE_TARGETS)) and (card == damagest_card) and (card_value < 5):
+      # Damage AOEs
+      if (any(effects in effect_types for effects in DAMAGE_EFFECTS)) and (any(effects in effect_targets for effects in DAMAGE_AOE_TARGETS)) and (card == damagest_aoe) and (card_value < 5):
         await asyncio.sleep(0.3)
         card_value = 5
         final_cast = card
-      
-      # Negative Charms
-      if (any(effects in effect_types for effects in CHARM_EFFECTS)) and (any(effects in effect_targets for effects in ENEMY_TARGETS)) and (card_value < 4):
+
+      # Damage spells
+      if (any(effects in effect_types for effects in DAMAGE_EFFECTS)) and (any(effects in effect_targets for effects in DAMAGE_TARGETS)) and (card == damagest_card) and (card_value < 4):
         await asyncio.sleep(0.3)
         card_value = 4
         final_cast = card
-
-      # Negative Wards
-      if (SpellEffects.modify_incoming_damage in effect_types) and (any(effects in effect_targets for effects in FRIENDLY_TARGETS)) and (card_value < 3):
+      
+      # Negative Charms
+      if (any(effects in effect_types for effects in CHARM_EFFECTS)) and (any(effects in effect_targets for effects in ENEMY_TARGETS)) and (card_value < 3):
         await asyncio.sleep(0.3)
         card_value = 3
         final_cast = card
 
-      # Other Auras/Globals
-      if (any(effects in effect_types for effects in AURA_GLOBAL_EFFECTS)) and (any(effects in effect_targets for effects in AURA_GLOBAL_TARGETS)) and (card_value < 2):
+      # Negative Wards
+      if (SpellEffects.modify_incoming_damage in effect_types) and (any(effects in effect_targets for effects in FRIENDLY_TARGETS)) and (card_value < 2):
         await asyncio.sleep(0.3)
         card_value = 2
+        final_cast = card
+
+      # Other Auras/Globals
+      if (any(effects in effect_types for effects in AURA_GLOBAL_EFFECTS)) and (any(effects in effect_targets for effects in AURA_GLOBAL_TARGETS)) and (card_value < 1):
+        await asyncio.sleep(0.3)
+        card_value = 1
         final_cast = card
     
     if final_cast:
