@@ -1,6 +1,5 @@
 import asyncio
 
-from wizwalker.memory.memory_objects import game_stats
 from wizwalker.combat import CombatHandler, CombatMember
 from wizwalker.memory.memory_objects.enums import SpellEffects, EffectTarget
 
@@ -39,7 +38,7 @@ HEALING_EFFECTS = [
 ]
 TRAP_ENCHANT_EFFECTS = [
   SpellEffects.modify_card_incoming_damage, 
-  SpellEffects.protect_card_harmful
+  SpellEffects.protect_card_harmful,
 ]
 CHARM_ENCHANT_EFFECTS = [
   SpellEffects.modify_card_outgoing_damage, 
@@ -142,7 +141,8 @@ class WizFighter(CombatHandler):
 
     return effect_params
 
-  async def average_effect_param(self, card):
+  async def average_damage_effect_param(self, card):
+    subeffect_params = []
     effect_params = []
 
     for effect in await card.get_spell_effects():
@@ -152,17 +152,29 @@ class WizFighter(CombatHandler):
         subeffects = await effect.maybe_effect_list()
 
         for subeffect in subeffects:
-          effect_params.append(await subeffect.effect_param())
+          subeffect_type = await subeffect.effect_type()
+
+          if subeffect_type in DAMAGE_EFFECTS:
+            subeffect_params.append(await subeffect.effect_param())
         
-        if effect_params:
+        if subeffect_params:
           total = 0
-          for effect_param in effect_params:
+          for effect_param in subeffect_params:
             total += effect_param
         
-          return (total / len(effect_params))
+          return (total / len(subeffect_params))
 
       else:
-        return await effect.effect_param()
+        effect_type = await effect.effect_type()
+
+        if effect_type in DAMAGE_EFFECTS:
+          effect_params.append(await effect.effect_param())
+
+    total_param = 0
+    for effect_param in effect_params:
+      total_param += effect_param
+
+    return total_param
 
   async def highest_health_mob(self, mobs):
     to_kill_health = 0
@@ -184,8 +196,8 @@ class WizFighter(CombatHandler):
       card_targets = await self.read_target_effect(card)
 
       if (any(effects in card_effects for effects in DAMAGE_EFFECTS)) and (any(effects in card_targets for effects in DAMAGE_TARGETS)):
-        if await self.average_effect_param(card) > highest_damage:
-          highest_damage = await self.average_effect_param(card)
+        if await self.average_damage_effect_param(card) > highest_damage:
+          highest_damage = await self.average_damage_effect_param(card)
             
           damagest_card = card
 
@@ -201,8 +213,8 @@ class WizFighter(CombatHandler):
       card_targets = await self.read_target_effect(card)
 
       if (any(effects in card_effects for effects in DAMAGE_EFFECTS)) and (any(effects in card_targets for effects in DAMAGE_AOE_TARGETS)):
-        if await self.average_effect_param(card) > highest_damage:
-          highest_damage = await self.average_effect_param(card)
+        if await self.average_damage_effect_param(card) > highest_damage:
+          highest_damage = await self.average_damage_effect_param(card)
             
           damagest_aoe = card
 
@@ -222,11 +234,37 @@ class WizFighter(CombatHandler):
 
     return await self.get_cards_with_predicate(_pred)
 
+  # From WizWalker 2.0 Branch 
+  async def get_members_on_team(self, same_as_client: bool = True) -> list[CombatMember]:
+    client_member = await self.get_client_member()
+
+    part = await client_member.get_participant()
+    client_team_id = await part.team_id()
+
+    async def _on_other_team(member):
+      member_part = await member.get_participant()
+      member_team_id = await member_part.team_id()
+
+      return member_team_id != client_team_id
+
+    async def _on_same_team(member):
+      member_part = await member.get_participant()
+      member_team_id = await member_part.team_id()
+
+      return member_team_id == client_team_id
+
+    if same_as_client:
+      return await self.get_members_with_predicate(_on_same_team)
+
+    else:
+      return await self.get_members_with_predicate(_on_other_team)
+
   async def handle_round(self):
     await asyncio.sleep(0.5)
 
     client_member = await self.get_client_member()
-    mobs = await self.get_all_monster_members()
+    teammates = await self.get_members_on_team(same_as_client=True)
+    mobs = await self.get_members_on_team(same_as_client=False)
     to_kill = await self.highest_health_mob(mobs)
     
     # Finds the boss(es)
@@ -240,6 +278,12 @@ class WizFighter(CombatHandler):
         boss = mob
     if is_multi_boss:
       is_boss = False
+
+    # Need Heals
+    to_heal = None
+    for teammate in teammates:
+      if (await teammate.health() / await teammate.max_health()) < 0.15:
+        to_heal = teammate
 
     # Sorting Enchants and Normals
     enchants = []
@@ -282,67 +326,73 @@ class WizFighter(CombatHandler):
     card_value = 0
     for card in normals:
 
-      # Spell Effects (I hate them)
+      # Spell Effects
       effect_types = await self.read_spell_effect(card)
       effect_targets = await self.read_target_effect(card)
 
       # Heals
-      if (any(effects in effect_types for effects in HEALING_EFFECTS)) and ((await client_member.health() / await client_member.max_health()) < 0.15):
+      if (any(effects in effect_types for effects in HEALING_EFFECTS)) and (to_heal != None):
         await asyncio.sleep(0.3)
-        card_value = 11
+        card_value = 12
         final_cast = card
 
       # Prisms
-      if (is_boss) and (card_value < 10):
+      if (is_boss) and (card_value < 11):
         if (SpellEffects.modify_incoming_damage_type in effect_types) and (await self.get_school_template_name(boss) == await self.get_school_template_name(client_member)):
           await asyncio.sleep(0.3)
-          card_value = 10
+          card_value = 11
           final_cast = card
 
       # Damage Positive Charms
-      if (SpellEffects.modify_outgoing_damage in effect_types) and (any(effects in effect_targets for effects in FRIENDLY_TARGETS)) and (card_value < 9):
+      if (SpellEffects.modify_outgoing_damage in effect_types) and (any(effects in effect_targets for effects in FRIENDLY_TARGETS)) and (card_value < 10):
+        await asyncio.sleep(0.3)
+        card_value = 10
+        final_cast = card
+
+      # Positive Wards
+      if (SpellEffects.modify_incoming_damage in effect_types) and (any(effects in effect_targets for effects in ENEMY_TARGETS)) and (card_value < 9):
         await asyncio.sleep(0.3)
         card_value = 9
         final_cast = card
 
-      # Positive Wards
-      if (SpellEffects.modify_incoming_damage in effect_types) and (any(effects in effect_targets for effects in ENEMY_TARGETS)) and (card_value < 8):
+      # Damage Auras/Globals
+      if (any(effects in effect_types for effects in DAMAGE_AURA_GLOBAL_EFFECTS)) and (any(effects in effect_targets for effects in AURA_GLOBAL_TARGETS)) and (card_value < 8):
         await asyncio.sleep(0.3)
         card_value = 8
         final_cast = card
 
-      # Damage Auras/Globals
-      if (any(effects in effect_types for effects in DAMAGE_AURA_GLOBAL_EFFECTS)) and (any(effects in effect_targets for effects in AURA_GLOBAL_TARGETS)) and (card_value < 7):
+      # Other Positive Charms
+      if (any(effects in effect_types for effects in CHARM_EFFECTS)) and (any(effects in effect_targets for effects in FRIENDLY_TARGETS)) and (card_value < 7):
         await asyncio.sleep(0.3)
         card_value = 7
         final_cast = card
 
-      # Other Positive Charms
-      if (any(effects in effect_types for effects in CHARM_EFFECTS)) and (any(effects in effect_targets for effects in FRIENDLY_TARGETS)) and (card_value < 6):
+      # Damage AOEs
+      if (any(effects in effect_types for effects in DAMAGE_EFFECTS)) and (any(effects in effect_targets for effects in DAMAGE_AOE_TARGETS)) and (card == damagest_aoe) and (card_value < 6):
         await asyncio.sleep(0.3)
         card_value = 6
         final_cast = card
 
-      # Damage AOEs
-      if (any(effects in effect_types for effects in DAMAGE_EFFECTS)) and (any(effects in effect_targets for effects in DAMAGE_AOE_TARGETS)) and (card == damagest_aoe) and (card_value < 5):
+      # Damage spells
+      if (any(effects in effect_types for effects in DAMAGE_EFFECTS)) and (any(effects in effect_targets for effects in DAMAGE_TARGETS)) and (card == damagest_card) and (card_value < 5):
         await asyncio.sleep(0.3)
         card_value = 5
         final_cast = card
-
-      # Damage spells
-      if (any(effects in effect_types for effects in DAMAGE_EFFECTS)) and (any(effects in effect_targets for effects in DAMAGE_TARGETS)) and (card == damagest_card) and (card_value < 4):
+      
+      # Negative Charms
+      if (any(effects in effect_types for effects in CHARM_EFFECTS)) and (any(effects in effect_targets for effects in ENEMY_TARGETS)) and (card_value < 4):
         await asyncio.sleep(0.3)
         card_value = 4
         final_cast = card
-      
-      # Negative Charms
-      if (any(effects in effect_types for effects in CHARM_EFFECTS)) and (any(effects in effect_targets for effects in ENEMY_TARGETS)) and (card_value < 3):
+
+      # Negative Wards
+      if (SpellEffects.modify_incoming_damage in effect_types) and (any(effects in effect_targets for effects in FRIENDLY_TARGETS)) and (card_value < 3):
         await asyncio.sleep(0.3)
         card_value = 3
         final_cast = card
 
-      # Negative Wards
-      if (SpellEffects.modify_incoming_damage in effect_types) and (any(effects in effect_targets for effects in FRIENDLY_TARGETS)) and (card_value < 2):
+      # Steal Pip
+      if (SpellEffects.modify_pips in effect_types) and (any(effects in effect_targets for effects in ENEMY_TARGETS)) and (card_value < 2):
         await asyncio.sleep(0.3)
         card_value = 2
         final_cast = card
@@ -358,38 +408,36 @@ class WizFighter(CombatHandler):
       final_cast_targets = await self.read_target_effect(final_cast)
 
       ## Enchanting
-      if not await final_cast.is_item_card():
+      if not await final_cast.is_item_card() and not await final_cast.is_treasure_card() and not await final_cast.is_enchanted():
 
         # Heals
+        return_effects = None
         if (any(effects in final_cast_types for effects in HEALING_EFFECTS)) and heal_enchants:
           print(f"Enchanting {await final_cast.display_name()} with {await heal_enchants[0].display_name()}")
           await heal_enchants[0].cast(final_cast)
-
-          enchanted_cards = await self.get_enchanted_spells_by_spell_effect(HEALING_EFFECTS)
-          final_cast = enchanted_cards[0]
+          return_effects = HEALING_EFFECTS
 
         # Positive charms
         elif (SpellEffects.modify_outgoing_damage in final_cast_types) and (any(effects in final_cast_targets for effects in FRIENDLY_TARGETS)) and charm_enchants:
           print(f"Enchanting {await final_cast.display_name()} with {await charm_enchants[0].display_name()}")
           await charm_enchants[0].cast(final_cast)
-
-          enchanted_cards = await self.get_enchanted_spells_by_spell_effect([SpellEffects.modify_outgoing_damage])
-          final_cast = enchanted_cards[0]
+          return_effects = [SpellEffects.modify_outgoing_damage]  
 
         # Positive Wards
         elif (SpellEffects.modify_incoming_damage in final_cast_types) and (any(effects in final_cast_targets for effects in ENEMY_TARGETS)) and trap_enchants:
           print(f"Enchanting {await final_cast.display_name()} with {await trap_enchants[0].display_name()}")
           await trap_enchants[0].cast(final_cast)
-
-          enchanted_cards = await self.get_enchanted_spells_by_spell_effect([SpellEffects.modify_incoming_damage])
-          final_cast = enchanted_cards[0]
+          return_effects = [SpellEffects.modify_incoming_damage]
 
         # Damage
         elif (any(effects in final_cast_types for effects in DAMAGE_EFFECTS)) and (any(effects in final_cast_targets for effects in ENEMY_TARGETS)) and damage_enchants:
           print(f"Enchanting {await final_cast.display_name()} with {await damage_enchants[0].display_name()}")
           await damage_enchants[0].cast(final_cast)
+          return_effects = DAMAGE_EFFECTS
 
-          enchanted_cards = await self.get_enchanted_spells_by_spell_effect(DAMAGE_EFFECTS)
+        # Reget new cards
+        if return_effects != None:
+          enchanted_cards = await self.get_enchanted_spells_by_spell_effect(return_effects)
           final_cast = enchanted_cards[0]
 
       ## Targeting
@@ -398,6 +446,9 @@ class WizFighter(CombatHandler):
           target = boss
         else:
           target = to_kill
+        
+      elif (EffectTarget.friendly_single in final_cast_targets) and any(effects in final_cast_types for effects in HEALING_EFFECTS) and (to_heal != None):
+        target = to_heal
 
       elif EffectTarget.friendly_single in final_cast_targets:
         target = client_member
