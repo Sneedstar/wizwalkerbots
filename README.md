@@ -27,8 +27,9 @@ WizFighter looks through your hand and decides what card to use. It's priority g
 4. Positive Wards
 5. Damage Auras & Globals
 6. Other Positive Charms
-7. Damage Spells
-8. Negative Charms
-9. Negative Wards (shields)
-10. Other Auras & Globals
-11. Passing <br />
+7. AOE Damage Spells
+8. Other Damage Spells
+9. Negative Charms
+10. Negative Wards (shields)
+11. Other Auras & Globals
+12. Passing <br />
