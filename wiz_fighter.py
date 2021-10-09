@@ -324,7 +324,10 @@ class WizFighter(CombatHandler):
     ## Find card to cast
     final_cast = None
     card_value = 0
-    for card in normals:
+    # Made it function for asyncio.gather speed
+    async def determine_final_cast(card):
+      nonlocal final_cast
+      nonlocal card_value
 
       # Spell Effects
       effect_types = await self.read_spell_effect(card)
@@ -402,6 +405,8 @@ class WizFighter(CombatHandler):
         await asyncio.sleep(0.3)
         card_value = 1
         final_cast = card
+
+    await asyncio.gather(*[determine_final_cast(card) for card in normals])
     
     if final_cast:
       final_cast_types = await self.read_spell_effect(final_cast)
@@ -414,25 +419,25 @@ class WizFighter(CombatHandler):
         return_effects = None
         if (any(effects in final_cast_types for effects in HEALING_EFFECTS)) and heal_enchants:
           print(f"Enchanting {await final_cast.display_name()} with {await heal_enchants[0].display_name()}")
-          await heal_enchants[0].cast(final_cast)
+          await heal_enchants[0].cast(final_cast, sleep_time=2)
           return_effects = HEALING_EFFECTS
 
         # Positive charms
         elif (SpellEffects.modify_outgoing_damage in final_cast_types) and (any(effects in final_cast_targets for effects in FRIENDLY_TARGETS)) and charm_enchants:
           print(f"Enchanting {await final_cast.display_name()} with {await charm_enchants[0].display_name()}")
-          await charm_enchants[0].cast(final_cast)
+          await charm_enchants[0].cast(final_cast, sleep_time=2)
           return_effects = [SpellEffects.modify_outgoing_damage]  
 
         # Positive Wards
         elif (SpellEffects.modify_incoming_damage in final_cast_types) and (any(effects in final_cast_targets for effects in ENEMY_TARGETS)) and trap_enchants:
           print(f"Enchanting {await final_cast.display_name()} with {await trap_enchants[0].display_name()}")
-          await trap_enchants[0].cast(final_cast)
+          await trap_enchants[0].cast(final_cast, sleep_time=2)
           return_effects = [SpellEffects.modify_incoming_damage]
 
         # Damage
         elif (any(effects in final_cast_types for effects in DAMAGE_EFFECTS)) and (any(effects in final_cast_targets for effects in ENEMY_TARGETS)) and damage_enchants:
           print(f"Enchanting {await final_cast.display_name()} with {await damage_enchants[0].display_name()}")
-          await damage_enchants[0].cast(final_cast)
+          await damage_enchants[0].cast(final_cast, sleep_time=2)
           return_effects = DAMAGE_EFFECTS
 
         # Reget new cards
@@ -461,7 +466,7 @@ class WizFighter(CombatHandler):
         print(f"Casting {await final_cast.display_name()} at {await target.name()}")
       else:
         print(f"Casting {await final_cast.display_name()}")
-      await final_cast.cast(target)
+      await final_cast.cast(target, sleep_time=2)
 
     else:
       print("No available spells, passing")
