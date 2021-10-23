@@ -11,7 +11,7 @@ async def setup(client):
     print(f"[{client.title}] Activating Hooks")
     await client.activate_hooks()
     await client.mouse_handler.activate_mouseless()
-    #await client.send_key(Keycode.PAGE_DOWN, 0.1) MAKE SURE TO PUT BACK WHEN DONE TESTING AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+    await client.send_key(Keycode.PAGE_DOWN, 0.1)
     await client.use_potion_if_needed(health_percent=20, mana_percent=5)
 
 async def tp_to_p1(client, p1):
@@ -22,9 +22,9 @@ async def tp_to_p1(client, p1):
     await client.send_key(Keycode.D, 0.1)
     await asyncio.sleep(0.2)
 
-async def tp_to_start(client, start, start_zone):
+async def tp_to_start(client, start, yaw, start_zone):
     print(f'[{client.title}] Tping to start')
-    await client.teleport(start)
+    await client.teleport(start, yaw)
     while await client.zone_name() != start_zone:
         await client.send_key(Keycode.S, 0.25)
         await client.send_key(Keycode.D, 0.1)
@@ -69,6 +69,7 @@ async def main(sprinter):
 
             await asyncio.sleep(1.4)
             dungeon_start = await p1.body.position()
+            dungeon_yaw = await p1.body.yaw()
 
         # Porting to p1 to mob, then porting rest to p1
         await p1.tp_to_closest_mob()
@@ -92,7 +93,7 @@ async def main(sprinter):
 
         # Restarting run
         if instance:
-            await asyncio.gather(*[tp_to_start(p, dungeon_start, start_zone) for p in clients])
+            await asyncio.gather(*[tp_to_start(p, dungeon_start, dungeon_yaw, start_zone) for p in clients])
         else:
             await asyncio.sleep(0.4)
             await asyncio.gather(*[p.send_key(Keycode.S, 0.1) for p in clients])
